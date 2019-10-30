@@ -1,0 +1,53 @@
+# Site
+repository: sproogen/resume-theme
+# favicon: images/favicon.ico
+
+# Personal info
+name: Francisco Farinha
+title: Third Year Engineering Physics Student
+email: fquico1999@gmail.com
+website: http://fquico1999.github.io/
+
+# Social links
+#twitter_username: facespics
+github_username:  Fquico1999
+# dribbble_username: jekyll
+# facebook_username: jekyll
+# flickr_username: jekyll
+#instagram_username: chillwildlife
+linkedin_username: franciscofarinha
+# pinterest_username: jekyll
+#youtube_username: globalmtb
+# googleplus_username: +jekyll
+
+# About Section
+# about_title: About Me
+#about_profile_image: images/profile.jpg
+about_content: | # this will include new lines to allow paragraphs
+  Hello, my name's Francisco and I'm a third year Engineering Physics student at the University of British Columbia.
+
+# Projects Section
+# projects_title: Projects
+
+# Experience Section
+# experience_title: Experience
+
+# Education Section
+# educaton_title: Education
+
+# More Section
+# more_title: A Little More About Me
+#more_content: | # this will include new lines to allow paragraphs
+
+# Footer
+footer_show_references: true
+
+# Build settings
+remote_theme: sproogen/resume-theme
+
+sass:
+  sass_dir: _sass
+  style: compressed
+
+plugins:
+ - jekyll-seo-tag
