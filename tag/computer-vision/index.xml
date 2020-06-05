@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Francisco Farinha</title>
-    <link>https://Fquico1999.github.io/</link>
-      <atom:link href="https://Fquico1999.github.io/index.xml" rel="self" type="application/rss+xml" />
-    <description>Francisco Farinha</description>
+    <title>Computer Vision | Francisco Farinha</title>
+    <link>https://Fquico1999.github.io/tag/computer-vision/</link>
+      <atom:link href="https://Fquico1999.github.io/tag/computer-vision/index.xml" rel="self" type="application/rss+xml" />
+    <description>Computer Vision</description>
     <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Fri, 05 Jun 2020 15:18:22 -0700</lastBuildDate>
     <image>
       <url>https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_512x512_fill_lanczos_center_2.png</url>
-      <title>Francisco Farinha</title>
-      <link>https://Fquico1999.github.io/</link>
+      <title>Computer Vision</title>
+      <link>https://Fquico1999.github.io/tag/computer-vision/</link>
     </image>
     
     <item>
@@ -25,14 +25,6 @@
       <link>https://Fquico1999.github.io/project/enph353/</link>
       <pubDate>Fri, 05 Jun 2020 15:18:04 -0700</pubDate>
       <guid>https://Fquico1999.github.io/project/enph353/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>EECE 571T: Artifact Removal &amp; Biomarker Segmentation</title>
-      <link>https://Fquico1999.github.io/project/eece571t/</link>
-      <pubDate>Fri, 05 Jun 2020 15:17:50 -0700</pubDate>
-      <guid>https://Fquico1999.github.io/project/eece571t/</guid>
       <description></description>
     </item>
     
