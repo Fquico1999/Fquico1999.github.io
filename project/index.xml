@@ -21,7 +21,8 @@
 &lt;a href=&#34;https://github.com/Fquico1999/numpy_neural_nets&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
 &lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
 &lt;p&gt;In an attempt to test and further my understanding of the mathematics and logistics behind neural networks and how they operate, I decided to follow what I learned in deeplearning.ai&amp;rsquo;s 
-&lt;a href=&#34;https://www.coursera.org/learn/neural-networks-deep-learning&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Neural Networks and Deep Learning&lt;/a&gt; course and implement Neural Networks from scratch using only python.&lt;/p&gt;
+&lt;a href=&#34;https://www.coursera.org/learn/neural-networks-deep-learning&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Neural Networks and Deep Learning&lt;/a&gt; course and implement Neural Networks from scratch using only 
+&lt;a href=&#34;https://numpy.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;NumPy&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;outline&#34;&gt;Outline&lt;/h2&gt;
 &lt;p&gt;To build a neural net from scratch, we need to go over each block and code those individually. At the end we can combine all of these to create an $L$-layer NN.&lt;/p&gt;
 &lt;p&gt;So, the steps we need to take are:&lt;/p&gt;
