@@ -263,7 +263,7 @@ $$\frac{d\sigma{(z)}}{dz} = \sigma{(z)}(1-\sigma{(z)})$$&lt;/p&gt;
 &lt;p&gt;For ReLU:&lt;/p&gt;
 &lt;p&gt;$$\text{ReLU}(z) = \max{(0,z)}$$
 $$\frac{d\text{ReLU}}{dz} = \left\{\begin{array}{ll}1 , z &amp;gt; 0\\0, z \le 0\end{array}\right.$$&lt;/p&gt;
-&lt;p&gt;Note that for ReLU, strictly speaking, there is a discontinuity at $z=0$, however since it is incredibly unlikely that the input to the function will every be exactly zero, it&amp;rsquo;s fine to include it in  $z\le0$&lt;/p&gt;
+&lt;p&gt;Note that for ReLU, strictly speaking, there is a discontinuity at $z=0$, however since it is incredibly unlikely that the input to the function will ever be exactly zero, it&amp;rsquo;s fine to include it in  $z\le0$&lt;/p&gt;
 &lt;p&gt;For tanh:
 $$\tanh{(z)} = \frac{e^{z}-e^{-z}}{e^{z}+e^{-z}}$$
 $$\frac{d\tanh(z)}{dz} = 1-\tanh^2(z)$$&lt;/p&gt;
