@@ -618,7 +618,8 @@
 <p>The objective of RoboCup@Home is to build a household assistant robot that can perform a variety of tasks, including carrying bags, introducing and seating guests at a party, answering a variety of trivia questions and more. Open Robotics is developing a robot to compete in the 2021 
 <a href="https://www.robocupathomeedu.org/" target="_blank" rel="noopener">RoboCup@Home Education Challenge</a> while in the meantime, our subteam will compete in the 2020 Competition using the Turtlebot 2 as our hardware platform.</p>
 <h2 id="the-challenge">The Challenge</h2>
-<p>The rules for the 2020 Challenge can be found 
+<p><a name="task1"></a>
+The rules for the 2020 Challenge can be found 
 <a href="https://docs.google.com/document/d/1aNPdZDvf9X4HHF13eSge_eHDP9NmC6UDqeYDM9Xyjcg/edit" target="_blank" rel="noopener">here</a>, but they boil down to three specific tasks:</p>
 <ul>
 <li>Carry My Luggage - Navigation task</li>
@@ -630,14 +631,18 @@
 <p>Starting at a predifined location, the robot has to find the operator and pick up the bag the operator is pointing to. After picking up the bag, the robot needs to indicate that it is ready to follow and then it must follow the operator while facing 4 obstacles along the way (crowd, small object, difficult to see 3D object, small blocked area).</p>
 <h4 id="find-my-mates">Find My Mates</h4>
 <p><em>Goal: The robot fetches the information of the party guests for the operator who knows only the names
-of the guests.</em></p>
-<p>Knowing only the operator, the robot must identify unknown people and meet those that are waving. Afterwards, it must remember the person and provide a unique description of that person, as well as that person&rsquo;s location, to the operator.</p>
+of the guests.</em>
+<a name="task3"></a>
+Knowing only the operator, the robot must identify unknown people and meet those that are waving. Afterwards, it must remember the person and provide a unique description of that person, as well as that person&rsquo;s location, to the operator.</p>
 <h4 id="receptionist">Receptionist</h4>
 <p><em>Goal: The robot has to take two arriving guests to the living room, introducing them to each other,
-and offering the just-arrived guest an unoccupied place to sit.</em></p>
-<p>Knowing the host of the party, John, the robot must identify unknown guests, request their names and favourite drinks and then point to an empty seat where the guest can sit.</p>
-<h2 id="a-namecontriba-my-contributions"><a name="contrib"></a> My Contributions</h2>
-<p>My main contributions have been in speech recognition and in handle segmentation, targeting tasks 3 and 1 respectively, however I also worked on facial recognition earlier in the project.</p>
+and offering the just-arrived guest an unoccupied place to sit.</em>
+<a name="contrib"></a>
+Knowing the host of the party, John, the robot must identify unknown guests, request their names and favourite drinks and then point to an empty seat where the guest can sit.</p>
+<h2 id="my-contributions">My Contributions</h2>
+<p>My main contributions have been in speech recognition and in handle segmentation, targeting 
+<a href="#task3">task 3</a> and 
+<a href="#task1">task 1</a> respectively, however I also worked on facial recognition earlier in the project.</p>
 <h3 id="speech-recognition">Speech Recognition</h3>
 <p><em>You can find this repository 
 <a href="https://github.com/UBC-OpenRobotics/SpeechRecognition" target="_blank" rel="noopener">here</a></em></p>

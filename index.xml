@@ -866,7 +866,8 @@ parameters = train(X_train_norm,Y_train, model_shape, layer_activations, optimiz
 &lt;p&gt;The objective of RoboCup@Home is to build a household assistant robot that can perform a variety of tasks, including carrying bags, introducing and seating guests at a party, answering a variety of trivia questions and more. Open Robotics is developing a robot to compete in the 2021 
 &lt;a href=&#34;https://www.robocupathomeedu.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RoboCup@Home Education Challenge&lt;/a&gt; while in the meantime, our subteam will compete in the 2020 Competition using the Turtlebot 2 as our hardware platform.&lt;/p&gt;
 &lt;h2 id=&#34;the-challenge&#34;&gt;The Challenge&lt;/h2&gt;
-&lt;p&gt;The rules for the 2020 Challenge can be found 
+&lt;p&gt;&lt;a name=&#34;task1&#34;&gt;&lt;/a&gt;
+The rules for the 2020 Challenge can be found 
 &lt;a href=&#34;https://docs.google.com/document/d/1aNPdZDvf9X4HHF13eSge_eHDP9NmC6UDqeYDM9Xyjcg/edit&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;, but they boil down to three specific tasks:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Carry My Luggage - Navigation task&lt;/li&gt;
@@ -878,14 +879,18 @@ parameters = train(X_train_norm,Y_train, model_shape, layer_activations, optimiz
 &lt;p&gt;Starting at a predifined location, the robot has to find the operator and pick up the bag the operator is pointing to. After picking up the bag, the robot needs to indicate that it is ready to follow and then it must follow the operator while facing 4 obstacles along the way (crowd, small object, difficult to see 3D object, small blocked area).&lt;/p&gt;
 &lt;h4 id=&#34;find-my-mates&#34;&gt;Find My Mates&lt;/h4&gt;
 &lt;p&gt;&lt;em&gt;Goal: The robot fetches the information of the party guests for the operator who knows only the names
-of the guests.&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;Knowing only the operator, the robot must identify unknown people and meet those that are waving. Afterwards, it must remember the person and provide a unique description of that person, as well as that person&amp;rsquo;s location, to the operator.&lt;/p&gt;
+of the guests.&lt;/em&gt;
+&lt;a name=&#34;task3&#34;&gt;&lt;/a&gt;
+Knowing only the operator, the robot must identify unknown people and meet those that are waving. Afterwards, it must remember the person and provide a unique description of that person, as well as that person&amp;rsquo;s location, to the operator.&lt;/p&gt;
 &lt;h4 id=&#34;receptionist&#34;&gt;Receptionist&lt;/h4&gt;
 &lt;p&gt;&lt;em&gt;Goal: The robot has to take two arriving guests to the living room, introducing them to each other,
-and offering the just-arrived guest an unoccupied place to sit.&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;Knowing the host of the party, John, the robot must identify unknown guests, request their names and favourite drinks and then point to an empty seat where the guest can sit.&lt;/p&gt;
-&lt;h2 id=&#34;a-namecontriba-my-contributions&#34;&gt;&lt;a name=&#34;contrib&#34;&gt;&lt;/a&gt; My Contributions&lt;/h2&gt;
-&lt;p&gt;My main contributions have been in speech recognition and in handle segmentation, targeting tasks 3 and 1 respectively, however I also worked on facial recognition earlier in the project.&lt;/p&gt;
+and offering the just-arrived guest an unoccupied place to sit.&lt;/em&gt;
+&lt;a name=&#34;contrib&#34;&gt;&lt;/a&gt;
+Knowing the host of the party, John, the robot must identify unknown guests, request their names and favourite drinks and then point to an empty seat where the guest can sit.&lt;/p&gt;
+&lt;h2 id=&#34;my-contributions&#34;&gt;My Contributions&lt;/h2&gt;
+&lt;p&gt;My main contributions have been in speech recognition and in handle segmentation, targeting 
+&lt;a href=&#34;#task3&#34;&gt;task 3&lt;/a&gt; and 
+&lt;a href=&#34;#task1&#34;&gt;task 1&lt;/a&gt; respectively, however I also worked on facial recognition earlier in the project.&lt;/p&gt;
 &lt;h3 id=&#34;speech-recognition&#34;&gt;Speech Recognition&lt;/h3&gt;
 &lt;p&gt;&lt;em&gt;You can find this repository 
 &lt;a href=&#34;https://github.com/UBC-OpenRobotics/SpeechRecognition&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
