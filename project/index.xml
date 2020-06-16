@@ -317,17 +317,12 @@ $$-\sum\limits_{i=1}^{m}\frac{y^{i}}{a^{[L](i)}} - \frac{1-y^{i}}{1-a^{[L](i)}}$
         dZ = dA
     
     elif activation == &amp;quot;relu&amp;quot;:
-#         ret = np.copy(Z)
-#         ret[ret&amp;gt;0] = 1.00
-#         ret[ret &amp;lt;= 0] = 0.00
-#         dZ = np.multiply(dA, ret)
         dZ = np.array(dA, copy=True)
         dZ[Z &amp;lt;= 0] = 0
         
     elif activation == &amp;quot;sigmoid&amp;quot;:
         s = 1./(1+np.exp(-Z))
         dZ = dA * s * (1-s)
-#         dZ = np.multiply(dA, sigmoid(Z)*(1-sigmoid(Z)))
 
     elif activation == &amp;quot;leaky_relu&amp;quot;:
         dZ = np.array(dA, copy=True)
@@ -629,8 +624,6 @@ To do this, we have some input data $X$ with respective labels $Y$. Now, to impl
     mini_batches = []
     #Get number of examples
     m = X.shape[1] 
-    
-    #Need to reshape Y
 
     idx = list(np.random.permutation(m))
     shuffled_X = X[:, idx]
@@ -673,7 +666,7 @@ To do this, we have some input data $X$ with respective labels $Y$. Now, to impl
     beta2 -- decay of past squared gradients for adam
     epsilon -- hyperparameter preventing division by zero in Adam and RMSProp updates
     num_epochs -- number of epochs
-    print_cost -- True to print the cost every 100 epochs
+    print_cost -- True to print the cost every 5 epochs
 
     Returns:
     parameters -- trained parameters
@@ -712,7 +705,7 @@ To do this, we have some input data $X$ with respective labels $Y$. Now, to impl
         # Define the random minibatches. We increment the seed to reshuffle differently the dataset after each epoch
         seed = seed + 1
         minibatches = mini_batches(X, Y, mini_batch_size, seed)
-        #print(np.asarray(minibatches).shape)
+
         #Get cost over all batchs
         total_cost = 0
 
@@ -859,10 +852,10 @@ learning_rate = 0.0005
 parameters = train(X_train_norm,Y_train, model_shape, layer_activations, optimizer,
                    learning_rate=learning_rate, mini_batch_size=128, num_epochs=17)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Cost after epoch 0: 0.538137
-Cost after epoch 5: 0.270331
-Cost after epoch 10: 0.185126
-Cost after epoch 15: 0.094295
+&lt;pre&gt;&lt;code&gt;Cost after epoch 0: 0.458453
+Cost after epoch 5: 0.259276
+Cost after epoch 10: 0.162094
+Cost after epoch 15: 0.085669
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;./numpy_neural_nets_27_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;evaluating-our-model&#34;&gt;Evaluating our Model&lt;/h2&gt;
@@ -922,28 +915,78 @@ fig.set_facecolor(&#39;w&#39;)
 i_correct = np.random.randint(len(X_correct), size=3)
 i_incorrect = np.random.randint(len(X_incorrect), size=3)
 
-ax[0,0].imshow(X_correct[i_correct[0]])
-ax[0,0].set_title(&amp;quot;%i: Correctly predicted Y=%i&amp;quot;%(i_correct[0],class_a*Y_correct[i_correct[0]][0] + (1-Y_correct[i_correct[0]][0])*class_b))
+for i in range(3):
+    ax[i,0].imshow(X_correct[i_correct[i]])
+    ax[i,0].set_title(&amp;quot;%i: Correctly predicted Y=%i&amp;quot;%(i_correct[i],class_a*Y_correct[i_correct[i]][0] + (1-Y_correct[i_correct[i]][0])*class_b))
+    
+    ax[i,1].imshow(X_incorrect[i_incorrect[i]])
+    ax[i,1].set_title(&amp;quot;%i: Incorrectly predicted Y=%i&amp;quot;%(i_incorrect[i],class_b*Y_incorrect[i_incorrect[i]][0] + (1-Y_incorrect[i_incorrect[i]][0])*class_a))
+    
+    ax[i,0].xaxis.set_visible(False)
+    ax[i,0].yaxis.set_visible(False)
+    ax[i,1].xaxis.set_visible(False)
+    ax[i,1].yaxis.set_visible(False)
 
-ax[0,1].imshow(X_incorrect[i_incorrect[0]])
-ax[0,1].set_title(&amp;quot;%i: Incorrectly predicted Y=%i&amp;quot;%(i_incorrect[0],class_b*Y_incorrect[i_incorrect[0]][0] + (1-Y_incorrect[i_incorrect[0]][0])*class_a))
-
-ax[1,0].imshow(X_correct[i_correct[1]])
-ax[1,0].set_title(&amp;quot;%i: Correctly predicted Y=%i&amp;quot;%(i_correct[1],class_a*Y_correct[i_correct[1]][0] + (1-Y_correct[i_correct[1]][0])*class_b))
-
-ax[1,1].imshow(X_incorrect[i_incorrect[1]])
-ax[1,1].set_title(&amp;quot;%i: Incorrectly predicted Y=%i&amp;quot;%(i_incorrect[1],class_b*Y_incorrect[i_incorrect[1]][0] + (1-Y_incorrect[i_incorrect[1]][0])*class_a))
-
-ax[2,0].imshow(X_correct[i_correct[2]])
-ax[2,0].set_title(&amp;quot;%i: Correctly predicted Y=%i&amp;quot;%(i_correct[2],class_a*Y_correct[i_correct[2]][0] + (1-Y_correct[i_correct[2]][0])*class_b))
-
-ax[2,1].imshow(X_incorrect[i_incorrect[2]])
-ax[2,1].set_title(&amp;quot;%i: Incorrectly predicted Y=%i&amp;quot;%(i_incorrect[2],class_b*Y_incorrect[i_incorrect[2]][0] + (1-Y_incorrect[i_incorrect[2]][0])*class_a))
 plt.show()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Accuracy: 0.956820
+&lt;pre&gt;&lt;code&gt;Accuracy: 0.964671
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;./numpy_neural_nets_30_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;adam-optimization&#34;&gt;Adam Optimization&lt;/h3&gt;
+&lt;p&gt;Now that we&amp;rsquo;ve gotten results using Gradient Descent, Let&amp;rsquo;s compare it with adam optimization&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Model Parameters
+n_x = X_train_norm.shape[0]
+n_y = 1
+n_h = 7
+model_shape = (n_x, n_h, n_y)
+
+layer_activations = [&#39;relu&#39;,&#39;relu&#39;,&#39;sigmoid&#39;]
+optimizer = &#39;adam&#39;
+
+learning_rate = 0.0005
+
+parameters = train(X_train_norm,Y_train, model_shape, layer_activations, optimizer,
+                   learning_rate=learning_rate, mini_batch_size=128, num_epochs=5)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Cost after epoch 0: 0.347253
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./numpy_neural_nets_32_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Evaluate
+correct, incorrect = evaluate(X_test_norm, Y_test.T, layer_activations, parameters)
+
+#Get correect predictions
+X_correct = X_test[correct]
+Y_correct = Y_test[correct]
+
+#Get incorrect predictions
+X_incorrect = X_test[incorrect]
+Y_incorrect = Y_test[incorrect]
+
+fig,ax = plt.subplots(3,2)
+fig.set_size_inches(12,18)
+fig.set_facecolor(&#39;w&#39;)
+
+i_correct = np.random.randint(len(X_correct), size=3)
+i_incorrect = np.random.randint(len(X_incorrect), size=3)
+
+for i in range(3):
+    ax[i,0].imshow(X_correct[i_correct[i]])
+    ax[i,0].set_title(&amp;quot;%i: Correctly predicted Y=%i&amp;quot;%(i_correct[i],class_a*Y_correct[i_correct[i]][0] + (1-Y_correct[i_correct[i]][0])*class_b))
+    
+    ax[i,1].imshow(X_incorrect[i_incorrect[i]])
+    ax[i,1].set_title(&amp;quot;%i: Incorrectly predicted Y=%i&amp;quot;%(i_incorrect[i],class_b*Y_incorrect[i_incorrect[i]][0] + (1-Y_incorrect[i_incorrect[i]][0])*class_a))
+    
+    ax[i,0].xaxis.set_visible(False)
+    ax[i,0].yaxis.set_visible(False)
+    ax[i,1].xaxis.set_visible(False)
+    ax[i,1].yaxis.set_visible(False)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Accuracy: 0.969578
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./numpy_neural_nets_33_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;comparison&#34;&gt;Comparison&lt;/h3&gt;
+&lt;p&gt;As we can see, using the adam optimizer yielded better accuracy in nearly one third of the number of epochs.&lt;/p&gt;
 </description>
     </item>
     
@@ -1011,7 +1054,7 @@ Knowing the host of the party, John, the robot must identify unknown guests, req
   
 
 
-&lt;video controls &gt;
+&lt;video autoplay loop &gt;
   &lt;source src=&#34;https://Fquico1999.github.io/img/openrobotics_handleseg.mp4&#34; type=&#34;video/mp4&#34;&gt;
 &lt;/video&gt;
 </description>

@@ -76,7 +76,7 @@ Knowing the host of the party, John, the robot must identify unknown guests, req
   
 
 
-&lt;video controls &gt;
+&lt;video autoplay loop &gt;
   &lt;source src=&#34;https://Fquico1999.github.io/img/openrobotics_handleseg.mp4&#34; type=&#34;video/mp4&#34;&gt;
 &lt;/video&gt;
 </description>
