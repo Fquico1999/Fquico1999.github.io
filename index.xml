@@ -5,12 +5,983 @@
     <link>https://Fquico1999.github.io/</link>
       <atom:link href="https://Fquico1999.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Francisco Farinha</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>©2020 Francisco Farinha | [Academic](https://sourcethemes.com/academic/) | [Hugo](https://gohugo.io)</copyright><lastBuildDate>Tue, 09 Jun 2020 22:09:34 -0700</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>©2020 Francisco Farinha | [Academic](https://sourcethemes.com/academic/) | [Hugo](https://gohugo.io)</copyright><lastBuildDate>Fri, 26 Jun 2020 13:40:17 -0700</lastBuildDate>
     <image>
       <url>https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_512x512_fill_lanczos_center_2.png</url>
       <title>Francisco Farinha</title>
       <link>https://Fquico1999.github.io/</link>
     </image>
+    
+    <item>
+      <title>GAN Who</title>
+      <link>https://Fquico1999.github.io/project/ganwho/</link>
+      <pubDate>Fri, 26 Jun 2020 13:40:17 -0700</pubDate>
+      <guid>https://Fquico1999.github.io/project/ganwho/</guid>
+      <description>&lt;p&gt;&lt;em&gt;You can find this repository 
+&lt;a href=&#34;https://github.com/Fquico1999/GANWho&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
+&lt;p&gt;The base concept of a GAN in this scenario is that we have two seperate neural networks which are trained differently.&lt;/p&gt;
+&lt;p&gt;There is a Discriminator and a Generator network with different inputs and outputs.&lt;/p&gt;
+&lt;p&gt;The discriminator classifies images as real or not real (In other words, as coming from the generated distribution or the real data distribution). In this case, the input is an image, and the output is a probability of the input belonging to the real dataset distribution.&lt;/p&gt;
+&lt;p&gt;The generator takes in random seeds and will output an image.&lt;/p&gt;
+&lt;p&gt;Training the Generator
+Both networks need to be implemented at the same time, but the weights must be updated at different times. To train the generator, we freeze the discriminator weights. We input just random seeds to the generator and the output images are fed into the discriminator. Which will try and evaluate whether they are generated or not. So the labels for this step are all $y_i=1.0$. Backpropagation trains the generator to produce images that better &amp;ldquo;fool&amp;rdquo; the discriminator&lt;/p&gt;
+&lt;p&gt;Training the Discriminator
+We freeze the weights of the Generator, we generate images with the generator, and we take the same number of images from the input data distribution. These are fed into the discriminator which outputs probabilities of being from the input dataset. Thus backpropagation will train the discriminator to be able to distinguish real from generated images.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import tensorflow as tf
+tf.enable_eager_execution()
+from tensorflow.keras.losses import BinaryCrossentropy
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import Sequential, Model, load_model
+from tensorflow.keras.layers import Conv2D, LeakyReLU, Dropout, ZeroPadding2D, ReLU
+from tensorflow.keras.layers import BatchNormalization, Flatten, Dense, UpSampling2D
+from tensorflow.keras.layers import Reshape, Activation, Conv2DTranspose
+from tensorflow.keras.layers import AveragePooling2D, Input, Add
+from tensorflow.keras.backend import resize_images
+
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+# config = tf.ConfigProto()
+# config.gpu_options.allow_growth = True
+# session = tf.Session(config=config)
+
+import numpy as np
+import csv
+import time
+import os
+import matplotlib.pyplot as plt
+from PIL import Image
+from tqdm import tqdm
+import dask.array as da
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;defining-the-models&#34;&gt;Defining the Models&lt;/h2&gt;
+&lt;p&gt;We have two models to define, the generator and the discriminator.&lt;/p&gt;
+&lt;p&gt;Intuitively, if the output we want to generate are images, then the discriminator will be a ConvNet, since it needs to extract features from an image to output a single numerical prediction. So it&amp;rsquo;s no surprise our model takes the image and applies a series of convolutions. To prevent overfitting, we also apply Dropout to our layers.&lt;/p&gt;
+&lt;p&gt;On the other hand, the generator takes in a vector seed and generates an image. So intuitively it must be composed of a series of upsamplings, which it is.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def get_discriminator(image_shape):
+    model = Sequential()
+
+    model.add(Conv2D(32, kernel_size=3, strides=2, input_shape=image_shape, 
+                     padding=&amp;quot;same&amp;quot;))
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Dropout(0.25))
+    model.add(Conv2D(64, kernel_size=3, strides=2, padding=&amp;quot;same&amp;quot;))
+    model.add(ZeroPadding2D(padding=((0,1),(0,1))))
+    model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Dropout(0.25))
+    model.add(Conv2D(128, kernel_size=3, strides=2, padding=&amp;quot;same&amp;quot;))
+    model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Dropout(0.25))
+    model.add(Conv2D(256, kernel_size=3, strides=1, padding=&amp;quot;same&amp;quot;))
+    model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Dropout(0.25))
+    model.add(Conv2D(512, kernel_size=3, strides=1, padding=&amp;quot;same&amp;quot;))
+    model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(Dropout(0.25))
+    model.add(Flatten())
+    model.add(Dense(1, activation=&#39;sigmoid&#39;))
+
+    return model
+
+def get_generator(seed_size):
+    model = Sequential()
+
+    model.add(Dense(4*4*256,activation=&amp;quot;relu&amp;quot;,input_dim=seed_size))
+    model.add(Reshape((4,4,256)))
+
+    model.add(UpSampling2D())
+    model.add(Conv2D(256,kernel_size=3,padding=&amp;quot;same&amp;quot;))
+    model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(UpSampling2D())
+    model.add(Conv2D(256,kernel_size=3,padding=&amp;quot;same&amp;quot;))
+    model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(alpha=0.2))
+    
+    # Output resolution, additional upsampling
+    model.add(UpSampling2D())
+    model.add(Conv2D(128,kernel_size=3,padding=&amp;quot;same&amp;quot;))
+    model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(alpha=0.2))
+
+    model.add(UpSampling2D(size=(2,2)))
+    model.add(Conv2D(128,kernel_size=3,padding=&amp;quot;same&amp;quot;))
+    model.add(BatchNormalization(momentum=0.8))
+    model.add(LeakyReLU(alpha=0.2))
+
+    # Final CNN layer
+    model.add(Conv2D(3,kernel_size=3,padding=&amp;quot;same&amp;quot;))
+    model.add(Activation(&amp;quot;tanh&amp;quot;))
+
+    return model
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;helper-functions&#34;&gt;Helper Functions&lt;/h2&gt;
+&lt;p&gt;Here I&amp;rsquo;ll define functions that help with training the GAN.&lt;/p&gt;
+&lt;p&gt;First, we need to define the loss function for both the discriminator and the generator since these are trained differently.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll also define a helper function to save progress images of the training&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_generator(Y_hat):
+    &amp;quot;&amp;quot;&amp;quot;
+    Implements Binary Crossentropy Loss for the Generator
+    
+    Arguments:
+    Y_hat -- Discriminator Predictions
+    
+    Returns:
+    loss -- BinaryCrossentropy loss for the generator
+    &amp;quot;&amp;quot;&amp;quot;
+    #Recall the generator is trained on y_hats of only one
+    Y = tf.ones_like(Y_hat)
+    loss = BinaryCrossentropy(from_logits=True)(Y, Y_hat)
+    return loss
+
+def loss_discriminator(Y_hat_real, Y_hat_gen):
+    &amp;quot;&amp;quot;&amp;quot;
+    Implements BinaryCrossentropy loss for the Discriminator
+    
+    Arguments:
+    Y_hat_real -- Predictions on real distribution samples
+    Y_hat_gen -- Predictions on generated samples
+    
+    Returns:
+    total -- Combined Real and Generated loss of Discriminator
+    &amp;quot;&amp;quot;&amp;quot;
+    entropy  = BinaryCrossentropy(from_logits=True)
+    Y_real = tf.ones_like(Y_hat_real)
+    Y_gen = tf.zeros_like(Y_hat_gen)
+    loss_real = entropy(Y_real, Y_hat_real)
+    loss_gen =  entropy(Y_gen, Y_hat_gen)
+    total = loss_real+loss_gen
+    return total
+
+def save_images(output_path, epoch, seed):
+    image_array = np.full((16 + (4 * (W+16)), 16 + (7 * (H+16)), 3), 255, dtype=np.uint8)
+
+    generated_images = generator.predict(seed)
+
+    generated_images = 0.5 * generated_images + 0.5
+
+    image_count = 0
+    for row in range(4):
+        for col in range(7):
+            r = row * (W+16) + 16
+            c = col * (H+16) + 16
+            image_array[r:r+W,c:c+H] = generated_images[image_count] * 255
+            image_count += 1
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    filename = os.path.join(output_path,&amp;quot;train-%s.png&amp;quot;%epoch)
+    im = Image.fromarray(image_array)
+    im.save(filename)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;defining-a-training-step&#34;&gt;Defining a Training step&lt;/h2&gt;
+&lt;p&gt;Tensorflow allows for precise control over what a training step is comprised of.  &lt;code&gt;tf.function&lt;/code&gt;  takes a python function and converts it to a graph representation that Tensorflow can use to perform automatic differentiation efficiently. Additionally, it provides us the power to control how the discriminator and generator get updated.&lt;/p&gt;
+&lt;p&gt;It is interesting how this process is accomplished. &lt;code&gt;tf.GradientTape()&lt;/code&gt; allows Tensorflow to keep track of the operations defined in the function and then apply automatic differentiation.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll list through the operations that a training step requires:&lt;/p&gt;
+&lt;ol&gt;
+    &lt;li&gt;Generate a random seed to input to the Generator&lt;/li&gt;
+    &lt;li&gt;Obtain a generated dataset from the generator given the input seed&lt;/li&gt;
+    &lt;li&gt;Obtain predictions from the discriminator on the dataset obtained from the real distribution&lt;/li&gt;
+    &lt;li&gt;Obtian predictions from the discriminator on the generated dataset&lt;/li&gt;
+    &lt;li&gt;Obtain losses for both generator and discriminator&lt;/li&gt;
+    &lt;li&gt;Using Automatic Differentiation, obtain the gradients for the generator and discriminator &lt;/li&gt;
+    &lt;li&gt;Apply Backpropagation using the gradients.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;@tf.function
+def step(batch):
+    X_real, Y_real = batch
+    seed = tf.random.normal([X_real.shape[0], Y_real.shape[1]])
+    
+    #GradientTape - how tf does automatic differentiation.
+    with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+        X_gen = generator(seed, training=True)
+        
+        Y_hat_real = discriminator(X_real, training=True)
+        Y_hat_gen = discriminator(X_gen, training=True)
+        
+        gen_loss = loss_generator(Y_hat_gen)
+        disc_loss = loss_discriminator(Y_hat_real, Y_hat_gen)
+        
+        generator_grads = gen_tape.gradient(gen_loss, generator.trainable_variables)
+        discriminator_grads = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+        
+        generator_optimizer.apply_gradients(zip(generator_grads, generator.trainable_variables))
+        discriminator_optimizer.apply_gradients(zip(discriminator_grads, discriminator.trainable_variables))
+        
+        return gen_loss, disc_loss
+        
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def train(dataset, epochs, seed_size):
+    fixed_seed = np.random.normal(0, 1, (4 * 7, seed_size))
+    start = time.time()
+
+    for epoch in range(epochs):
+        epoch_start = time.time()
+
+        gen_loss_list = []
+        disc_loss_list = []
+
+        for image_batch in dataset:
+            t = step(image_batch)
+            gen_loss_list.append(t[0])
+            disc_loss_list.append(t[1])
+
+        g_loss = sum(gen_loss_list) / len(gen_loss_list)
+        d_loss = sum(disc_loss_list) / len(disc_loss_list)
+
+        epoch_elapsed = time.time()-epoch_start
+        print (&#39;Epoch %i, gen loss=%f,disc loss=%f \t %f&#39; % (epoch+1, g_loss, d_loss, epoch_elapsed))
+        save_images(output_path,epoch,fixed_seed )
+
+    elapsed = time.time()-start
+    print (&#39;Training time: %f&#39; % elapsed)
+    
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;preparing-the-dataset&#34;&gt;Preparing the Dataset&lt;/h2&gt;
+&lt;p&gt;I&amp;rsquo;ll be training the GAN on Google&amp;rsquo;s 
+&lt;a href=&#34;https://google.github.io/cartoonset/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Cartoon Set&lt;/a&gt;. The premise is to be able to generate good-enough looking faces with set categories to be able to play a randomized game of 
+&lt;a href=&#34;https://en.wikipedia.org/wiki/Guess_Who%3F&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Guess Who&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The dataset is comprised of 10,000 randomly generated cartoon faces, each with .csv files containing the descriptive features.&lt;/p&gt;
+&lt;p&gt;The size of these images are $500\times500$. This is too large for my current GPU setup, so I&amp;rsquo;ll shrink it down to $64\times64$. Additionally, the .csv files hold set characteristics about the cartoon such as type of hair, eye color, etc. This allows us to create seeds to represent each of the cartoons.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dataset_path = &#39;./cartoonset10k/&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Visualize one entry
+files = os.listdir(dataset_path)
+
+i = np.random.randint(len(files)//2)
+
+#Investigate one sample
+file_name = files[i].split(&#39;.&#39;)[0]
+#Images are .png
+image_path = os.path.join(dataset_path, file_name+&#39;.png&#39;)
+csv_path = os.path.join(dataset_path, file_name+&#39;.csv&#39;)
+
+Image.open(image_path)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./GAN_11_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#View csv file
+characteristics = []
+variants = []
+total_variants = []
+with open(csv_path) as f:
+    reader = csv.reader(f)
+    for row in reader:
+        characteristic, value, num = row
+        characteristics.append(characteristic)
+        variants.append(float(value))
+        total_variants.append(float(num))
+unique_seed = np.asarray(variants)/(np.asarray(total_variants)/2)-1.0
+print(&amp;quot;Charateristics are:\n %s&amp;quot; % str(characteristics))
+print(&amp;quot;Unique Seed:\n %s&amp;quot; % str(unique_seed))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Charateristics are:
+ [&#39;eye_angle&#39;, &#39;eye_lashes&#39;, &#39;eye_lid&#39;, &#39;chin_length&#39;, &#39;eyebrow_weight&#39;, &#39;eyebrow_shape&#39;, &#39;eyebrow_thickness&#39;, &#39;face_shape&#39;, &#39;facial_hair&#39;, &#39;hair&#39;, &#39;eye_color&#39;, &#39;face_color&#39;, &#39;hair_color&#39;, &#39;glasses&#39;, &#39;glasses_color&#39;, &#39;eye_slant&#39;, &#39;eyebrow_width&#39;, &#39;eye_eyebrow_distance&#39;]
+Unique Seed:
+ [-0.33333333  0.          0.         -0.33333333  0.         -0.57142857
+ -0.5         0.42857143  0.86666667 -0.63963964  0.6         0.09090909
+  0.2         0.5        -1.         -0.33333333  0.33333333 -1.        ]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Given the set number of characteristics, we can define unique seeds for each of the faces in our dataset. In doing so we can hope to create a structured latent space that allows us to tweak and generate images based on characteristics that we wish.&lt;/p&gt;
+&lt;p&gt;One aspect of note. Since the input images are PNG files they have 4 channels, RGBA, where the last one is the transparancy layer. This is useless to us, however it is not sufficient to just remove it as I found it produced artifacts near the borders of the face itself. Instead, we composite the image with a background, and can then safely remove the transparancy layer&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def get_unique_seed(csv_path):
+    &amp;quot;&amp;quot;&amp;quot;
+    Function to determine seed for a given sample in the dataset
+    
+    Attributes:
+    csv_path -- python string, path to the csv file
+    
+    Returns:
+    unique_seed -- numpy array, unique seed of image, length equal to number of features in the dataset
+    &amp;quot;&amp;quot;&amp;quot;
+    variants = []
+    total_variants = []
+    with open(csv_path) as f:
+        reader = csv.reader(f)
+        for row in reader:
+            _ , value, num = row
+            variants.append(float(value))
+            total_variants.append(float(num))
+    unique_seed = np.asarray(variants)/(np.asarray(total_variants)/2)-1.0
+    return unique_seed
+
+def get_features(csv_path):
+    &amp;quot;&amp;quot;&amp;quot;
+    Obtains list of feature for the dataset
+    
+    Attributes:
+    csv_path -- python string, path to the csv file
+    
+    Returns:
+    features -- python list, features of a sample in the dataset. Fixed for the datset
+    &amp;quot;&amp;quot;&amp;quot;
+    features = []
+    with open(csv_path) as f:
+        reader = csv.reader(f)
+        for row in reader:
+            feat ,_,_ = row
+            features.append(feat)
+    return features
+    
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Set width and height
+W = 64
+H = 64
+
+X = []
+Y = []
+
+X_path = &#39;./X.npy&#39;
+Y_path = &#39;./Y.npy&#39;
+
+for i,file_name in tqdm(enumerate(os.listdir(dataset_path)), desc=&#39;Reading Data&#39;):
+    #Ensure only look at the images, to avoid duplicates
+    if &#39;.png&#39; in file_name:
+        name = file_name.split(&#39;.&#39;)[0]
+        #Images are .png
+        image_path = os.path.join(dataset_path, name+&#39;.png&#39;)
+        csv_path = os.path.join(dataset_path, name+&#39;.csv&#39;)
+
+        #Get feautures
+        if i == 0:
+            features = get_features(csv_path)
+
+        #Get unique seed
+        seed = get_unique_seed(csv_path)
+
+        #Read and resize image
+        png = Image.open(image_path).resize((W,H),Image.ANTIALIAS)
+        background = Image.new(&#39;RGBA&#39;, png.size, (0,0,0))
+        
+        #Create alpha composite to avoid artifacts
+        alpha_composite = Image.alpha_composite(background, png)
+        
+        img = np.asarray(alpha_composite)/127.5 - 1.0
+        
+        #Remove transparancy layer
+        X.append(img[...,:3])
+        Y.append(seed)
+
+#Convert to np
+X = np.asarray(X)
+Y = np.asarray(Y)
+
+X = np.reshape(X,(-1,W, H, 3))
+X = X.astype(np.float32)
+
+#Save
+np.save(X_path,X)
+np.save(Y_path, Y)
+
+print(&#39;Done&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Visualize one entry of the dataset
+i = np.random.randint(X.shape[0])
+
+fig, ax = plt.subplots()
+fig.set_size_inches(12,12)
+fig.set_facecolor(&#39;w&#39;)
+
+ax.imshow(X[i])
+ax.set_title(Y[i])
+plt.axis(&#39;off&#39;)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./GAN_16_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;gan-stability-and-failure-modes&#34;&gt;GAN Stability and Failure Modes&lt;/h2&gt;
+&lt;p&gt;Before we start training, it is noteworthy to mention just how difficult GANs are to train. This difficulty arises because we need to train both a generative and discriminative model at the same time where improvements in one model will impact the other.&lt;/p&gt;
+&lt;p&gt;Because of this dynamic system, GANs can outright fail to converge. As such, I found it necessary to learn more about GAN stability and failure modes.&lt;/p&gt;
+&lt;p&gt;First, I&amp;rsquo;ll analyze what a Stable GAN should look like while training. Some best practices are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Use Leaky ReLU activations instead of ReLU, since it is often preferred to normalize inputs to be between $[-1,1]$, and ReLU will set any inputs less than $0$ to be $0$.&lt;/li&gt;
+&lt;li&gt;Use a Kernel Size that is a factor of the stride&lt;/li&gt;
+&lt;li&gt;Use hyperbolic tan (tanh) as the output layer activation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Once training begins, a stable GAN will have a generator loss somewhere around $[1.0,2.0]$ or higher, whereas the discriminator should hover around $0.5-0.8$.&lt;/p&gt;
+&lt;p&gt;Accuracy of the discriminator on both generated and real images should be around $0.7,0.8$&lt;/p&gt;
+&lt;p&gt;Personally, while training, I found that the initial training steps are crucial for stable training. I attempted several values of the learning rate parameter $\alpha$ which kept halting training without converging. The issue with this is that I required a very small $\alpha$ ($5.0\cdot 10^{-6}$) to be able to overcome the initial &amp;ldquo;turbulence&amp;rdquo;, however after becoming stable the improvements made were very slow as a result.&lt;/p&gt;
+&lt;h2 id=&#34;training-the-model&#34;&gt;Training the Model&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X_path = &#39;./X.npy&#39;
+Y_path = &#39;./Y.npy&#39;
+
+#Load the data
+X = np.load(X_path)
+Y = np.load(Y_path)
+
+#Shuffle data
+idx = np.random.permutation(range(X.shape[0]))
+X = X[idx]
+Y = Y[idx]
+
+#Dataset parameters
+batch_size = 8
+
+#Convert to unshuffled tensorflow dataset object
+dataset = tf.data.Dataset.from_tensor_slices((X,Y)).batch(batch_size)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Both the Generator and Discriminator will be optimized with Adam. Adam has three parameters that define it. It can be thought of combining Gradient Descent with RMSProp and Momentum. So it inherits the learning rate $\alpha$ parameter, as well as $\beta_1$ from momentum and $\beta_2$ from RMSProp. For a more in depth look at different optimizers, you can reference my implementation of neural nets from scratch in NumPy here.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#
+W = 64
+H = 64
+output_path = &#39;./figures&#39;
+
+#Define seed size
+seed_size = Y.shape[1]
+
+#Get models
+generator = get_generator(seed_size)
+discriminator = get_discriminator(X.shape[1:])
+
+#Alpha and Beta1 may need tuning. Beta2 most likely does not
+alpha = 5.0e-6
+beta_1 = 0.8
+beta_2 = 0.999
+
+#Get optimizers
+generator_optimizer = Adam(learning_rate=alpha, beta_1=beta_1, beta_2=beta_2)
+discriminator_optimizer = Adam(learning_rate=alpha, beta_1=beta_1, beta_2=beta_2)
+
+#Define parameters
+epochs = 500
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;train(dataset, epochs, seed_size)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;WARNING:tensorflow:From /home/francisco/.local/lib/python2.7/site-packages/tensorflow_estimator/python/estimator/api/_v1/estimator/__init__.py:12: The name tf.estimator.inputs is deprecated. Please use tf.compat.v1.estimator.inputs instead.
+
+WARNING:tensorflow:From /usr/local/lib/python2.7/dist-packages/tensorflow_core/python/ops/nn_impl.py:183: where (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.where in 2.0, which has the same broadcast rule as np.where
+Epoch 1, gen loss=0.679988,disc loss=1.362854 	 76.512750
+Epoch 2, gen loss=0.693136,disc loss=1.386321 	 72.690860
+Epoch 3, gen loss=0.693149,disc loss=1.386317 	 75.233255
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;At this point, I realized my hardware was poorly equiped to handle the training, especially since I had to set the learning rate so small. So I copied my code to 
+&lt;a href=&#34;https://colab.research.google.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Colab&lt;/a&gt; and used their GPU power to run the model for $500$ epochs. The Generator and Discriminator Losses are plotted below (I absentmindedly forgot to include a plot for $i=499$ and I didnt want to run the training for another 3 hours, so bear with me):&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./loss_400_plot.png&#34; alt=&#34;png&#34; title=&#34;Losses after 400 Epochs&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Additionally, for each epoch I saved a set of images from the same seed to see how training progressed over time, which is quite fascinating:&lt;/p&gt;
+
+
+
+
+  
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+&lt;video autoplay loop &gt;
+  &lt;source src=&#34;https://Fquico1999.github.io/img/training_0_500.mp4&#34; type=&#34;video/mp4&#34;&gt;
+&lt;/video&gt;
+&lt;h2 id=&#34;exploring-the-latent-space&#34;&gt;Exploring the Latent Space&lt;/h2&gt;
+&lt;p&gt;Initially, I had hoped that by feeding the generator feature vectors corresponding to the features outlined in the .csv files for each picture, the model would learn a very structured latent space that would be easy to navigate. However, I found the model to have a very large bias when I did this, so I had to opt for random seeds instead to obtain the results shown above.&lt;/p&gt;
+&lt;p&gt;As such, We need to explore this latent space to verify if there are ways of tweaking the output. If there are (hopefully orthogonalized) methods of accomplishing this, It will allow us to control the outputs we get, and be able to generate faces for our game of Guess Who.&lt;/p&gt;
+&lt;p&gt;The seeds fed into the generator during training matched the number of features described in each .csv file, so they have dimension $1\times18$, taking values in the range $(-1,1)$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Path to latest model (generator model that is)
+model_path = &#39;./models/generator_500.h5&#39;
+
+#Load generator
+generator = load_model(model_path, compile=False)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Inference on random 1x18 vector
+X_i = tf.random.normal([1,18])
+
+#Get image, in range (-1,1)
+y_hat = generator.predict(X_i)[0]
+
+#Process image to be (0,255)
+y = ((y_hat+1.0)*127.5).astype(np.int32)
+
+fig,ax = plt.subplots()
+fig.set_size_inches(12,12)
+fig.set_facecolor(&#39;w&#39;)
+
+ax.imshow(y)
+ax.set_title(X_i.numpy())
+
+plt.axis(&#39;off&#39;)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./GAN_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The image above is an example of inference done on the model. It actually looks quite a bit better than the images in the time-lapse above because its been rescaled to be in the range $(0,255)$ as intended.&lt;/p&gt;
+&lt;p&gt;My initial strategy to explore the latent space will be to have a baseline prediction of just zeros, and vary one feature at a time. I am not expecting the latent space to be orthogonalized like that, but it might give some indication of the changes that occur.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Inference on zeros 1x18 vector
+X_i = tf.zeros([1,18])
+
+#Get image, in range (-1,1)
+y_hat = generator.predict(X_i)[0]
+
+#Process image to be (0,255)
+y = ((y_hat+1.0)*127.5).astype(np.int32)
+
+fig,ax = plt.subplots()
+fig.set_size_inches(12,12)
+fig.set_facecolor(&#39;w&#39;)
+
+ax.imshow(y)
+ax.set_title(X_i.numpy())
+
+plt.axis(&#39;off&#39;)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./GAN_28_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Start with the inital row
+num_samples = 10
+X = np.zeros([num_samples, 18])
+samples = np.linspace(-1,1,num=num_samples)
+X[:,0]  = samples
+
+Y = generator.predict(X)
+
+fig, ax = plt.subplots(1,num_samples)
+fig.set_size_inches(num_samples*2,12)
+fig.set_facecolor(&#39;w&#39;)
+for i in range(num_samples):
+    y_hat = Y[i]
+    y = ((y_hat+1.0)*127.5).astype(np.int32)
+    ax[i].imshow(y)
+    ax[i].set_title(&amp;quot;%.02f&amp;quot; % samples[i])
+    ax[i].axis(&#39;off&#39;)
+fig.tight_layout()
+plt.show()
+
+#Make a finer sampling for gif
+num_samples = 100
+X = np.zeros([num_samples, 18])
+samples = np.linspace(-1,1,num=num_samples)
+X[:,0]  = samples
+
+Y = generator.predict(X)
+
+fig, ax = plt.subplots()
+fig.set_size_inches(12,12)
+fig.set_facecolor(&#39;w&#39;)
+for i in range(num_samples):
+    y_hat = Y[i]
+    y = ((y_hat+1.0)*127.5).astype(np.int32)
+    ax.imshow(y)
+    ax.axis(&#39;off&#39;)
+    plt.savefig(&#39;./figures/feature_1/frame_%i&#39; % i)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./GAN_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./GAN_29_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;This is absolutely incredible! The latent space seems smooth. We can see, however, it is not orthogonalized, since by changing this parameter we change not only the hair style, but color and skin color as well.&lt;/p&gt;
+
+
+
+
+  
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+&lt;video autoplay loop &gt;
+  &lt;source src=&#34;https://Fquico1999.github.io/img/feature_1.mp4&#34; type=&#34;video/mp4&#34;&gt;
+&lt;/video&gt;
+&lt;p&gt;The next step is to do the same for every feature.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;num_samples = 10
+num_feats = 18
+X = np.zeros([num_samples, num_feats])
+samples = np.linspace(-1,1,num=num_samples)
+
+fig, ax = plt.subplots(num_feats,num_samples)
+fig.set_size_inches(num_samples*2,num_feats*2)
+fig.set_facecolor(&#39;w&#39;)
+
+for i in range(num_feats):
+    X_i = np.copy(X)
+    X_i[:,i] = samples
+
+    Y = generator.predict(X_i)
+
+    for j in range(num_samples):
+        y_hat = Y[j]
+        y = ((y_hat+1.0)*127.5).astype(np.int32)
+        ax[i,j].imshow(y)
+        ax[i,j].set_title(&amp;quot;Feature %i : %.02f&amp;quot; % (i+1,samples[j]))
+        ax[i,j].axis(&#39;off&#39;)
+fig.tight_layout()
+plt.savefig(&#39;./figures/latentspace.png&#39;,dpi=200)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./GAN_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;super-resolution--upsampling&#34;&gt;Super Resolution / Upsampling&lt;/h2&gt;
+&lt;p&gt;Given the very large dataset of detailed images, we had to downscale the images to $64\times64$ to be able to fit in memory during training.&lt;/p&gt;
+&lt;p&gt;Now, I will train a super resolution model to upsample the images and obtain more detailed faces. I will be using the original dataset, in hopes that the GAN has learned a reasonable approximation to that distribution.&lt;/p&gt;
+&lt;p&gt;Now, the original $500x500$ scale may be too large for adequate mapping. I&amp;rsquo;ll try with $256\times256$.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll use a model architecture called VDSR, which stands for Very Deep Super Resolution. I review the paper 
+&lt;a href=&#34;../../post/vdsr_paper/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dataset_path = &#39;./cartoonset10k/&#39;
+
+#Set input width and height
+W_in = 64
+H_in = 64
+
+#Set output width and height
+W_out = 256
+H_out = 256
+
+X = []
+Y = []
+
+X_path = &#39;./super_res_X.npy&#39;
+Y_path = &#39;./super_res_Y.npy&#39;
+
+files = os.listdir(dataset_path)
+idx = np.random.randint(len(files), size=int(0.15*len(files)))
+
+for i,file_name in tqdm(enumerate(np.asarray(files)[idx]), desc=&#39;Reading Data&#39;):
+    #Ensure only look at the images, to avoid duplicates
+    if &#39;.png&#39; in file_name:
+        name = file_name.split(&#39;.&#39;)[0]
+        #Images are .png
+        image_path = os.path.join(dataset_path, name+&#39;.png&#39;)
+        
+        #Read and resize image
+        png_in = Image.open(image_path).resize((W_in,H_in),Image.ANTIALIAS)
+        background_in = Image.new(&#39;RGBA&#39;, png_in.size, (0,0,0))
+        #Create alpha composite to avoid artifacts
+        alpha_composite = Image.alpha_composite(background_in, png_in)
+        img_in = np.asarray(alpha_composite)/127.5 - 1.0
+        
+        #Get label
+        png_out = Image.open(image_path).resize((W_out, H_out), Image.BICUBIC)
+        background_out = Image.new(&#39;RGBA&#39;, png_out.size, (0,0,0))
+        #Create alpha composite to avoid artifacts
+        alpha_composite = Image.alpha_composite(background_out, png_out)
+        img_out = np.asarray(alpha_composite)/127.5-1.0
+        
+        X.append(img_in)
+        Y.append(img_out)
+
+#Convert to np
+X = np.asarray(X)
+Y = np.asarray(Y)
+
+X = np.reshape(X[...,:3],(-1,W_in, H_in, 3))
+X = X.astype(np.float32)
+
+Y = np.reshape(Y[...,:3],(-1,W_out, H_out, 3))
+Y = Y.astype(np.float32)
+
+#Save
+#np.save(X_path,X)
+#np.save(Y_path, Y)
+
+print(&#39;Done&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Reading Data: 3000it [00:21, 138.79it/s]
+
+
+Done
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def super_res_model(input_shape, output_shape):
+    
+    X_in = Input(shape = input_shape)
+    X = Conv2D(64, (3, 3), padding=&#39;same&#39;, kernel_initializer=&#39;he_normal&#39;)(X_in)
+    X = Activation(&#39;relu&#39;)(X)
+    for _ in range(18):
+        X = Conv2D(64, (3, 3), padding=&#39;same&#39;, kernel_initializer=&#39;he_normal&#39;)(X)
+        X = Activation(&#39;relu&#39;)(X)
+    
+    #Final layer for residual image
+    X = Conv2D(1, (3, 3), padding=&#39;same&#39;, kernel_initializer=&#39;he_normal&#39;)(X)
+    
+    X = Add()([X, X_in])
+    model = Model(inputs = X_in, outputs = X)
+    return model
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Set input width and height
+W_in = 64
+H_in = 64
+
+#Set output width and height
+W_out = 256
+H_out = 256
+
+#Resize input images with bicubic interpolation
+h_factor = H_out/H_in
+w_factor = W_out/ W_in
+X_resized = resize_images(X, h_factor, w_factor,data_format=&#39;channels_last&#39;,interpolation=&#39;bilinear&#39;)
+
+# model = super_res_model(X.shape[1:], Y.shape[1:])
+# model.compile(optimizer=&#39;adam&#39;,loss=&#39;mean_absolute_error&#39;, metrics=[&#39;accuracy&#39;])
+# model.summary()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;lr = 0.000007
+epochs = 75
+
+model = super_res_model(X_resized.shape.as_list()[1:], Y.shape[1:])
+model.compile(optimizer=Adam(lr=lr),loss=&#39;mean_absolute_error&#39;, metrics=[&#39;accuracy&#39;])
+model.summary()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Model: &amp;quot;model&amp;quot;
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to                     
+==================================================================================================
+input_1 (InputLayer)            [(None, 256, 256, 3) 0                                            
+__________________________________________________________________________________________________
+conv2d (Conv2D)                 (None, 256, 256, 64) 1792        input_1[0][0]                    
+__________________________________________________________________________________________________
+activation (Activation)         (None, 256, 256, 64) 0           conv2d[0][0]                     
+__________________________________________________________________________________________________
+conv2d_1 (Conv2D)               (None, 256, 256, 64) 36928       activation[0][0]                 
+__________________________________________________________________________________________________
+activation_1 (Activation)       (None, 256, 256, 64) 0           conv2d_1[0][0]                   
+__________________________________________________________________________________________________
+conv2d_2 (Conv2D)               (None, 256, 256, 64) 36928       activation_1[0][0]               
+__________________________________________________________________________________________________
+activation_2 (Activation)       (None, 256, 256, 64) 0           conv2d_2[0][0]                   
+__________________________________________________________________________________________________
+conv2d_3 (Conv2D)               (None, 256, 256, 64) 36928       activation_2[0][0]               
+__________________________________________________________________________________________________
+activation_3 (Activation)       (None, 256, 256, 64) 0           conv2d_3[0][0]                   
+__________________________________________________________________________________________________
+conv2d_4 (Conv2D)               (None, 256, 256, 64) 36928       activation_3[0][0]               
+__________________________________________________________________________________________________
+activation_4 (Activation)       (None, 256, 256, 64) 0           conv2d_4[0][0]                   
+__________________________________________________________________________________________________
+conv2d_5 (Conv2D)               (None, 256, 256, 64) 36928       activation_4[0][0]               
+__________________________________________________________________________________________________
+activation_5 (Activation)       (None, 256, 256, 64) 0           conv2d_5[0][0]                   
+__________________________________________________________________________________________________
+conv2d_6 (Conv2D)               (None, 256, 256, 64) 36928       activation_5[0][0]               
+__________________________________________________________________________________________________
+activation_6 (Activation)       (None, 256, 256, 64) 0           conv2d_6[0][0]                   
+__________________________________________________________________________________________________
+conv2d_7 (Conv2D)               (None, 256, 256, 64) 36928       activation_6[0][0]               
+__________________________________________________________________________________________________
+activation_7 (Activation)       (None, 256, 256, 64) 0           conv2d_7[0][0]                   
+__________________________________________________________________________________________________
+conv2d_8 (Conv2D)               (None, 256, 256, 64) 36928       activation_7[0][0]               
+__________________________________________________________________________________________________
+activation_8 (Activation)       (None, 256, 256, 64) 0           conv2d_8[0][0]                   
+__________________________________________________________________________________________________
+conv2d_9 (Conv2D)               (None, 256, 256, 64) 36928       activation_8[0][0]               
+__________________________________________________________________________________________________
+activation_9 (Activation)       (None, 256, 256, 64) 0           conv2d_9[0][0]                   
+__________________________________________________________________________________________________
+conv2d_10 (Conv2D)              (None, 256, 256, 64) 36928       activation_9[0][0]               
+__________________________________________________________________________________________________
+activation_10 (Activation)      (None, 256, 256, 64) 0           conv2d_10[0][0]                  
+__________________________________________________________________________________________________
+conv2d_11 (Conv2D)              (None, 256, 256, 64) 36928       activation_10[0][0]              
+__________________________________________________________________________________________________
+activation_11 (Activation)      (None, 256, 256, 64) 0           conv2d_11[0][0]                  
+__________________________________________________________________________________________________
+conv2d_12 (Conv2D)              (None, 256, 256, 64) 36928       activation_11[0][0]              
+__________________________________________________________________________________________________
+activation_12 (Activation)      (None, 256, 256, 64) 0           conv2d_12[0][0]                  
+__________________________________________________________________________________________________
+conv2d_13 (Conv2D)              (None, 256, 256, 64) 36928       activation_12[0][0]              
+__________________________________________________________________________________________________
+activation_13 (Activation)      (None, 256, 256, 64) 0           conv2d_13[0][0]                  
+__________________________________________________________________________________________________
+conv2d_14 (Conv2D)              (None, 256, 256, 64) 36928       activation_13[0][0]              
+__________________________________________________________________________________________________
+activation_14 (Activation)      (None, 256, 256, 64) 0           conv2d_14[0][0]                  
+__________________________________________________________________________________________________
+conv2d_15 (Conv2D)              (None, 256, 256, 64) 36928       activation_14[0][0]              
+__________________________________________________________________________________________________
+activation_15 (Activation)      (None, 256, 256, 64) 0           conv2d_15[0][0]                  
+__________________________________________________________________________________________________
+conv2d_16 (Conv2D)              (None, 256, 256, 64) 36928       activation_15[0][0]              
+__________________________________________________________________________________________________
+activation_16 (Activation)      (None, 256, 256, 64) 0           conv2d_16[0][0]                  
+__________________________________________________________________________________________________
+conv2d_17 (Conv2D)              (None, 256, 256, 64) 36928       activation_16[0][0]              
+__________________________________________________________________________________________________
+activation_17 (Activation)      (None, 256, 256, 64) 0           conv2d_17[0][0]                  
+__________________________________________________________________________________________________
+conv2d_18 (Conv2D)              (None, 256, 256, 64) 36928       activation_17[0][0]              
+__________________________________________________________________________________________________
+activation_18 (Activation)      (None, 256, 256, 64) 0           conv2d_18[0][0]                  
+__________________________________________________________________________________________________
+conv2d_19 (Conv2D)              (None, 256, 256, 1)  577         activation_18[0][0]              
+__________________________________________________________________________________________________
+add (Add)                       (None, 256, 256, 3)  0           conv2d_19[0][0]                  
+                                                                 input_1[0][0]                    
+==================================================================================================
+Total params: 667,073
+Trainable params: 667,073
+Non-trainable params: 0
+__________________________________________________________________________________________________
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;history = model.fit(X_resized.numpy(),Y,batch_size=1,epochs=60,validation_split=0.10)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model_name = &#39;super_res_%f_%i&#39; % (lr, epochs)
+model.save(&#39;/content/gdrive/My Drive/Colab Notebooks/GAN/&#39; + model_name + &#39;.h5&#39;)
+
+fig, ax = plt.subplots()
+fig.set_size_inches(12,12)
+fig.set_facecolor(&#39;w&#39;)
+
+ax.plot(history.history[&#39;accuracy&#39;], label = &#39;accuracy&#39;)
+ax.plot(history.history[&#39;val_accuracy&#39;], label = &#39;validation_accuracy&#39;)
+
+ax2 = ax.twinx()
+
+ax2.plot(history.history[&#39;loss&#39;], label = &#39;mse_loss&#39;)
+ax2.plot(history.history[&#39;val_loss&#39;], label = &#39;validation_mse_loss&#39;)
+
+plt.legend()
+plt.savefig(&#39;/content/gdrive/My Drive/Colab Notebooks/GAN/&#39; + model_name+&#39;_history.png&#39;)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./super_res_0.000007_75_history.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Unfortunately, my poor computer wasn&amp;rsquo;t able to load the large tensors into RAM, even only using 20% of the dataset. So I trained the model in Google collab once more.&lt;/p&gt;
+&lt;p&gt;Here is a sample input from that model&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;./super_res_0.000007_75_example.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;estabishing-the-pipeline&#34;&gt;Estabishing the Pipeline&lt;/h2&gt;
+&lt;p&gt;So we have two trained models. The first one is the generator that takes in a vector of noise and outputs an image of dimension $64\times 64\times 3$.&lt;/p&gt;
+&lt;p&gt;We also have a trained VDSR model that takes in images of dimension $256\times 256\times 3$ and outputs images of dimension $256\times 256\times 3$.&lt;/p&gt;
+&lt;p&gt;The inputs to the VDSR model are bicubic resizes of the $64\times 64\times 3$ outputs.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Path to latest generator model
+gen_model_path = &#39;./models/generator_500.h5&#39;
+
+#Path to super resolution model
+res_model_path = &#39;./models/super_res_0.000007_75.h5&#39;
+
+#Load generator
+generator = load_model(gen_model_path, compile=False)
+#Load super resolution model
+super_res_model = load_model(res_model_path, compile=False)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;## Params
+#Set input width and height
+W_in = 64
+H_in = 64
+
+#Set output width and height
+W_out = 256
+H_out = 256
+
+#Resize factor
+h_factor = H_out/H_in
+w_factor = W_out/ W_in
+
+## Generator
+#Inference on random 1x18 vector
+X_i = tf.random.normal([1,18])
+#Get image, in range (-1,1)
+y_hat = generator.predict(X_i)[0]
+
+#Process image to be (0,255)
+y = ((y_hat+1.0)*127.5).astype(np.int32)
+
+## Super Resolution
+#Resize
+y_resized = resize_images(np.expand_dims(y_hat, axis=0), h_factor, w_factor,data_format=&#39;channels_last&#39;,interpolation=&#39;bilinear&#39;)
+
+#Get super resolution prediction
+super_res_hat = super_res_model.predict(y_resized)[0]
+
+#Process image to be (0,255)
+super_res = ((super_res_hat+1.0)*127.5).astype(np.int32)
+
+## Plotting
+fig,ax = plt.subplots(1,2)
+fig.set_size_inches(24,12)
+fig.set_facecolor(&#39;w&#39;)
+
+ax[0].imshow(y)
+ax[0].set_title(X_i.numpy())
+
+ax[1].imshow(super_res)
+ax[1].set_title(&#39;Super Resolution&#39;)
+
+plt.axis(&#39;off&#39;)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;./GAN_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Accurate Image Super-Resolution Using Very Deep Convolutional Networks</title>
+      <link>https://Fquico1999.github.io/post/vdsr_paper/</link>
+      <pubDate>Fri, 26 Jun 2020 10:37:12 -0700</pubDate>
+      <guid>https://Fquico1999.github.io/post/vdsr_paper/</guid>
+      <description>&lt;p&gt;Find the paper 
+&lt;a href=&#34;https://arxiv.org/abs/1511.04587&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;at-a-glance&#34;&gt;At a Glance&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The paper proposes an effective model for single image super resolution that is highly accurate.&lt;/li&gt;
+&lt;li&gt;Increasing the model depth increases overall accuracy.&lt;/li&gt;
+&lt;li&gt;Contextual information over large regions is built up by cascading multiple smaller filters.&lt;/li&gt;
+&lt;li&gt;Convergence speed is maximized by learning only residuals, and using large learning rates with adjustable gradient clipping.&lt;/li&gt;
+&lt;li&gt;May be usefull in denoising and compression artifact removal&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;The goal of the paper is to introduce a single image super resolution (SISR) model that addresses some of the limitations of a previously proposed framework, the SRCNN.&lt;/p&gt;
+&lt;p&gt;The advantages of using CNNs for super resolution is that they provide an effective end-to-end solution, whereas past work required hand-engineered features.&lt;/p&gt;
+&lt;p&gt;The paper lists three limitations of SRCNNs and how VDSR can address these:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;SRCNN is context dependent in small images&lt;/em&gt; - Information in a small patch does not hold enough information for detail recovery. VDSR addresses this by cascading small filters to capture large region information.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;Training for deep CNNs is slow&lt;/em&gt; - VDSR addresses this by only learning &lt;em&gt;residuals&lt;/em&gt; - the difference between the Low Resolution (LR) and High Resolution (HR) images. This works because the LR and HR images share the same information to a very large extent. Additionally, very large learning rates are used during training, with adjustable gradient clipping.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;em&gt;SRCNN only works for a single scale&lt;/em&gt; - A single VDSR model is adequate for multi-scale-factor super resolution.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;proposed-method&#34;&gt;Proposed Method&lt;/h2&gt;
+&lt;h3 id=&#34;proposed-network&#34;&gt;Proposed Network&lt;/h3&gt;
+&lt;p&gt;The network takes in an interpolated LR (ILR) image of shape $w \times h \times 3$ and predicts the residual image ($ w \times h \times 1$) which is then added onto the ILR to yield the HR image ($w \times h \times 3$).&lt;/p&gt;
+&lt;p&gt;The network is comprised of $L$ layers where all but $l=1,20$ (first and last) follow ZEROPAD -&amp;gt; CONV($3\times 3, 64 \text{ filters}$) -&amp;gt; RELU. The first layer operates on the input and the last layer consists of ZEROPAD -&amp;gt; CONV($3\times 3, 1 \text{ filter}$) to output the desired residual image.&lt;/p&gt;
+&lt;p&gt;The purpose of zero-padding before each convolution is to preserve the size of the feature maps. One issue with deep CNNs is that the convolution operation reduces the size of the feature map. Pixels on the border cannot be inferred properly, so usually SISR methods crop the boundary out which is fine for shallow models, but for deep CNNs it is unfeasible. Zero-padding addresses this issue, and is reported to work well.&lt;/p&gt;
+&lt;p&gt;$L$ is specified to be $20$ in the paper&amp;rsquo;s training description.&lt;/p&gt;
+&lt;h3 id=&#34;training&#34;&gt;Training&lt;/h3&gt;
+&lt;p&gt;The Loss function was the mean squared error averaged over the training set: $\frac{1}{2}  || \pmb{y} - \pmb{\hat{y}}||^2$, where $\pmb{y}$ is the HR image corresponding to the input LR image, and $\pmb{\hat{y}}$ is the model predicted HR image.&lt;/p&gt;
+&lt;h4 id=&#34;residual-learning&#34;&gt;Residual Learning&lt;/h4&gt;
+&lt;p&gt;The residual image is defined as $\pmb{r}=\pmb{y}-\pmb{x}$. Most values are likely to be small or zero, which is desirable when training. Since we want the network to predict the residual $\pmb{r}$, the loss function can be rewritten as $\frac{1}{2}  || \pmb{r} - \pmb{\hat{y}}||^2$. However, in the actual network training, the loss is the $L_2$ norm betweeen the reconstructed image $\pmb{r}+\pmb{x}$ and the ground truth $\pmb{y}$.&lt;/p&gt;
+&lt;p&gt;Mini-batch Gradient Descent was used with a momentum optimizer (I assume, as the paper references momentum $\beta = 0.9$, could also be the Adam optimizer) and a weight decay of $0.0001$ (weight decay means adding a regularizing term to the loss, $\mathcal{L} = \frac{1}{2}  || \pmb{y} - \pmb{\hat{y}}||^2 + \gamma L_2, \gamma=0.0001$)&lt;/p&gt;
+&lt;h4 id=&#34;adjustable-gradient-clipping&#34;&gt;Adjustable Gradient Clipping&lt;/h4&gt;
+&lt;p&gt;An issue when training deep CNNs is the slow speed of convergence. One tactic to speed up training is to increase the learning rate $\alpha$, however this can lead to exploding gradients.&lt;/p&gt;
+&lt;p&gt;One solution to this is referred to as Gradient Clipping where the gradients of the parameters with respect to the loss function are clipped between a certain range $[-\theta, \theta]$. The issue with this approach is that, at the start of training when the learning rate is very high, $\theta$ must be very small to prevent exploding gradients, however as the network is trained, learning rate is annealed and as such $\alpha \frac{\partial{\mathcal{L}}}{\partial{W}}$ gets increasingly smaller.&lt;/p&gt;
+&lt;p&gt;The suggested method is to set gradients between $[-\frac{\theta}{\alpha}, \frac{\theta}{\alpha}]$, so the clipping is adjusted based on the current learning rate.&lt;/p&gt;
+&lt;h4 id=&#34;multi-scale&#34;&gt;Multi-Scale&lt;/h4&gt;
+&lt;p&gt;The model can be adapted to handle mutliple scales by simply training it on data of varying scales.
+Images are divided into sub-images without overlap where sub-images from different scales are present.&lt;/p&gt;
+&lt;p&gt;The paper tests the performance of a model trained with $s_{train}=\{2\}$ (scale factor of 2 in the training set) on different input scales and sees that for $s_{train} \ne s_{test}$, performance is bad. However when $s_{train}=\{2,3,4\}$ the performance at each scale factor is comparable with a corresponding single-scale network, even outperforming single-scale models at large scales (3,4).&lt;/p&gt;
+&lt;h3 id=&#34;results&#34;&gt;Results&lt;/h3&gt;
+&lt;p&gt;VDSR outperforms Bicubic, A+, RFL, SelfEx, and SRCNN (all methods listed) in every regard (PSNR/SSIM/time).&lt;/p&gt;
+&lt;p&gt;Benchmarks were made on Set5, Set14, B100 and Urban100 datasets.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>NumPy Neural Networks</title>
