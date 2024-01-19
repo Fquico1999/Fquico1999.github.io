@@ -5,9 +5,9 @@
     <link>https://Fquico1999.github.io/project/</link>
       <atom:link href="https://Fquico1999.github.io/project/index.xml" rel="self" type="application/rss+xml" />
     <description>Projects</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>©2021 Francisco Farinha | [Academic](https://sourcethemes.com/academic/) | [Hugo](https://gohugo.io)</copyright><lastBuildDate>Fri, 26 Jun 2020 13:40:17 -0700</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>©2024 Francisco Farinha | [Academic](https://sourcethemes.com/academic/) | [Hugo](https://gohugo.io)</copyright><lastBuildDate>Fri, 26 Jun 2020 13:40:17 -0700</lastBuildDate>
     <image>
-      <url>https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_512x512_fill_lanczos_center_2.png</url>
+      <url>https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_512x512_fill_lanczos_center_3.png</url>
       <title>Projects</title>
       <link>https://Fquico1999.github.io/project/</link>
     </image>
@@ -1304,42 +1304,42 @@ $$v_{\theta, i} := \beta v_{\theta, i} + (1-\beta)\theta_{i}$$&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Momentum:
 $$ \begin{cases}
-v_{dW^{[l]}} := \beta v_{dW^{[l]}} + (1 - \beta) dW^{[l]} \\&lt;br&gt;
+v_{dW^{[l]}} := \beta v_{dW^{[l]}} + (1 - \beta) dW^{[l]} \\
 W^{[l]} := W^{[l]} - \alpha v_{dW^{[l]}}
 \end{cases}$$&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;$$\begin{cases}
-v_{db^{[l]}} := \beta v_{db^{[l]}} + (1 - \beta) db^{[l]} \\&lt;br&gt;
+v_{db^{[l]}} := \beta v_{db^{[l]}} + (1 - \beta) db^{[l]} \\
 b^{[l]} := b^{[l]} - \alpha v_{db^{[l]}}
 \end{cases}$$&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;RMSProp:
 $$ \begin{cases}
-s_{dW^{[l]}} := \beta s_{dW^{[l]}} + (1 - \beta) (dW^{[l]})^{2} \\&lt;br&gt;
+s_{dW^{[l]}} := \beta s_{dW^{[l]}} + (1 - \beta) (dW^{[l]})^{2} \\
 W^{[l]} := W^{[l]} - \alpha \frac{dW^{[l]}}{\sqrt{s_{dW^{[l]}}}+\epsilon}
 \end{cases}$$&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;$$\begin{cases}
-s_{db^{[l]}} := \beta s_{db^{[l]}} + (1 - \beta) (db^{[l]})^{2} \\&lt;br&gt;
+s_{db^{[l]}} := \beta s_{db^{[l]}} + (1 - \beta) (db^{[l]})^{2} \\
 b^{[l]} := b^{[l]} - \alpha \frac{db^{[l]}}{\sqrt{s_{db^{[l]}}}+\epsilon}
 \end{cases}$$&lt;/p&gt;
 &lt;p&gt;Note the addition of $\epsilon$ in the denominator in both RMSProp and Adam. That is to prevent NaNs or divisions by zero, it increases numerical stability. The king of the optimizers, Adam, works by combining both momentum and RMSProp. Additionally, it also adds bias correction to the exponentially weighted averages $v$ and $s$. The need for bias correction comes from the fact that as the number of samples that we average over increases, the beginning of the averaging causes the output to be very small since at the start we only have one sample and the others are initialized to zero. As such, the start of our averaging results in a much lower start than the original distribution.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Adam:
 $$\begin{cases}
-v_{dW^{[l]}} := \beta_1 v_{dW^{[l]}} + (1 - \beta_1) dW^{[l]} \\&lt;br&gt;
-v^{corrected}_{dW^{[l]}} = \frac{v_{dW^{[l]}}}{1 - (\beta_1)^t} \\&lt;br&gt;
-s_{dW^{[l]}} := \beta_2 s_{dW^{[l]}} + (1 - \beta_2) (dW^{[l]})^2 \\&lt;br&gt;
-s^{corrected}_{dW^{[l]}} = \frac{s_{dW^{[l]}}}{1 - (\beta_2)^t} \\&lt;br&gt;
-W^{[l]} := W^{[l]} - \alpha \frac{v^{corrected}_{dW^{[l]}}}{\sqrt{s^{corrected}_{dW^{[l]}}} + \varepsilon}
+v_{dW^{[l]}} := \beta_1 v_{dW^{[l]}} + (1 - \beta_1) dW^{[l]} \\
+v^{corrected}&lt;em&gt;{dW^{[l]}} = \frac{v&lt;/em&gt;{dW^{[l]}}}{1 - (\beta_1)^t} \\
+s_{dW^{[l]}} := \beta_2 s_{dW^{[l]}} + (1 - \beta_2) (dW^{[l]})^2 \\
+s^{corrected}&lt;em&gt;{dW^{[l]}} = \frac{s&lt;/em&gt;{dW^{[l]}}}{1 - (\beta_2)^t} \\
+W^{[l]} := W^{[l]} - \alpha \frac{v^{corrected}&lt;em&gt;{dW^{[l]}}}{\sqrt{s^{corrected}&lt;/em&gt;{dW^{[l]}}} + \varepsilon}
 \end{cases}$$&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;$$\begin{cases}
-v_{db^{[l]}} := \beta_1 v_{db^{[l]}} + (1 - \beta_1) db^{[l]} \\&lt;br&gt;
-v^{corrected}_{db^{[l]}} = \frac{v_{db^{[l]}}}{1 - (\beta_1)^t} \\&lt;br&gt;
-s_{db^{[l]}} := \beta_2 s_{db^{[l]}} + (1 - \beta_2) (db^{[l]})^2 \\&lt;br&gt;
-s^{corrected}_{db^{[l]}} = \frac{s_{db^{[l]}}}{1 - (\beta_2)^t} \\&lt;br&gt;
-b^{[l]} := b^{[l]} - \alpha \frac{v^{corrected}_{db^{[l]}}}{\sqrt{s^{corrected}_{db^{[l]}}} + \varepsilon}
+v_{db^{[l]}} := \beta_1 v_{db^{[l]}} + (1 - \beta_1) db^{[l]} \\
+v^{corrected}&lt;em&gt;{db^{[l]}} = \frac{v&lt;/em&gt;{db^{[l]}}}{1 - (\beta_1)^t} \\
+s_{db^{[l]}} := \beta_2 s_{db^{[l]}} + (1 - \beta_2) (db^{[l]})^2 \\
+s^{corrected}&lt;em&gt;{db^{[l]}} = \frac{s&lt;/em&gt;{db^{[l]}}}{1 - (\beta_2)^t} \\
+b^{[l]} := b^{[l]} - \alpha \frac{v^{corrected}&lt;em&gt;{db^{[l]}}}{\sqrt{s^{corrected}&lt;/em&gt;{db^{[l]}}} + \varepsilon}
 \end{cases}$$&lt;/p&gt;
 &lt;p&gt;The $t$ parameter in Adam included in the bias correction formula is the number of steps taken.&lt;/p&gt;
 &lt;p&gt;Besides functions to update these parameters, we also need functions to initialize them (except for gradient descent)&lt;/p&gt;
@@ -2059,33 +2059,33 @@ FULL SPEED /1e-20/
 &lt;thead&gt;
 &lt;tr&gt;
 &lt;th&gt;Rules&lt;/th&gt;
-&lt;th align=&#34;center&#34;&gt;Points&lt;/th&gt;
+&lt;th style=&#34;text-align:center&#34;&gt;Points&lt;/th&gt;
 &lt;/tr&gt;
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;Correctly record license plate and position for a car on outside track&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;+6&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;+6&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Correctly record license plate and position for a car on inside track&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;+8&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;+8&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;More than two wheels outside of the track&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;-2&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;-2&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Collide with white pick-up truck&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;-5&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;-5&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Hit pedestrian&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;-10&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;-10&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Drive one full loop around the outer track&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;+5&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;+5&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;

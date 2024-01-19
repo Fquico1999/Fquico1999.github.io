@@ -215,8 +215,8 @@
   
 
   <link rel="manifest" href="/index.webmanifest">
-  <link rel="icon" type="image/png" href="/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_32x32_fill_lanczos_center_2.png">
-  <link rel="apple-touch-icon" type="image/png" href="/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_192x192_fill_lanczos_center_2.png">
+  <link rel="icon" type="image/png" href="/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_32x32_fill_lanczos_center_3.png">
+  <link rel="apple-touch-icon" type="image/png" href="/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_192x192_fill_lanczos_center_3.png">
 
   <link rel="canonical" href="https://Fquico1999.github.io/project/numpy_neural_nets/">
 
@@ -284,7 +284,7 @@
     "name": "Francisco Farinha",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_192x192_fill_lanczos_center_2.png"
+      "url": "https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_192x192_fill_lanczos_center_3.png"
     }
   },
   "description": "Implementation of Neural Networks using only NumPy"
@@ -996,42 +996,42 @@ $$v_{\theta, i} := \beta v_{\theta, i} + (1-\beta)\theta_{i}$$</p>
 <ul>
 <li>Momentum:
 $$ \begin{cases}
-v_{dW^{[l]}} := \beta v_{dW^{[l]}} + (1 - \beta) dW^{[l]} \\<br>
+v_{dW^{[l]}} := \beta v_{dW^{[l]}} + (1 - \beta) dW^{[l]} \\
 W^{[l]} := W^{[l]} - \alpha v_{dW^{[l]}}
 \end{cases}$$</li>
 </ul>
 <p>$$\begin{cases}
-v_{db^{[l]}} := \beta v_{db^{[l]}} + (1 - \beta) db^{[l]} \\<br>
+v_{db^{[l]}} := \beta v_{db^{[l]}} + (1 - \beta) db^{[l]} \\
 b^{[l]} := b^{[l]} - \alpha v_{db^{[l]}}
 \end{cases}$$</p>
 <ul>
 <li>RMSProp:
 $$ \begin{cases}
-s_{dW^{[l]}} := \beta s_{dW^{[l]}} + (1 - \beta) (dW^{[l]})^{2} \\<br>
+s_{dW^{[l]}} := \beta s_{dW^{[l]}} + (1 - \beta) (dW^{[l]})^{2} \\
 W^{[l]} := W^{[l]} - \alpha \frac{dW^{[l]}}{\sqrt{s_{dW^{[l]}}}+\epsilon}
 \end{cases}$$</li>
 </ul>
 <p>$$\begin{cases}
-s_{db^{[l]}} := \beta s_{db^{[l]}} + (1 - \beta) (db^{[l]})^{2} \\<br>
+s_{db^{[l]}} := \beta s_{db^{[l]}} + (1 - \beta) (db^{[l]})^{2} \\
 b^{[l]} := b^{[l]} - \alpha \frac{db^{[l]}}{\sqrt{s_{db^{[l]}}}+\epsilon}
 \end{cases}$$</p>
 <p>Note the addition of $\epsilon$ in the denominator in both RMSProp and Adam. That is to prevent NaNs or divisions by zero, it increases numerical stability. The king of the optimizers, Adam, works by combining both momentum and RMSProp. Additionally, it also adds bias correction to the exponentially weighted averages $v$ and $s$. The need for bias correction comes from the fact that as the number of samples that we average over increases, the beginning of the averaging causes the output to be very small since at the start we only have one sample and the others are initialized to zero. As such, the start of our averaging results in a much lower start than the original distribution.</p>
 <ul>
 <li>Adam:
 $$\begin{cases}
-v_{dW^{[l]}} := \beta_1 v_{dW^{[l]}} + (1 - \beta_1) dW^{[l]} \\<br>
-v^{corrected}_{dW^{[l]}} = \frac{v_{dW^{[l]}}}{1 - (\beta_1)^t} \\<br>
-s_{dW^{[l]}} := \beta_2 s_{dW^{[l]}} + (1 - \beta_2) (dW^{[l]})^2 \\<br>
-s^{corrected}_{dW^{[l]}} = \frac{s_{dW^{[l]}}}{1 - (\beta_2)^t} \\<br>
-W^{[l]} := W^{[l]} - \alpha \frac{v^{corrected}_{dW^{[l]}}}{\sqrt{s^{corrected}_{dW^{[l]}}} + \varepsilon}
+v_{dW^{[l]}} := \beta_1 v_{dW^{[l]}} + (1 - \beta_1) dW^{[l]} \\
+v^{corrected}<em>{dW^{[l]}} = \frac{v</em>{dW^{[l]}}}{1 - (\beta_1)^t} \\
+s_{dW^{[l]}} := \beta_2 s_{dW^{[l]}} + (1 - \beta_2) (dW^{[l]})^2 \\
+s^{corrected}<em>{dW^{[l]}} = \frac{s</em>{dW^{[l]}}}{1 - (\beta_2)^t} \\
+W^{[l]} := W^{[l]} - \alpha \frac{v^{corrected}<em>{dW^{[l]}}}{\sqrt{s^{corrected}</em>{dW^{[l]}}} + \varepsilon}
 \end{cases}$$</li>
 </ul>
 <p>$$\begin{cases}
-v_{db^{[l]}} := \beta_1 v_{db^{[l]}} + (1 - \beta_1) db^{[l]} \\<br>
-v^{corrected}_{db^{[l]}} = \frac{v_{db^{[l]}}}{1 - (\beta_1)^t} \\<br>
-s_{db^{[l]}} := \beta_2 s_{db^{[l]}} + (1 - \beta_2) (db^{[l]})^2 \\<br>
-s^{corrected}_{db^{[l]}} = \frac{s_{db^{[l]}}}{1 - (\beta_2)^t} \\<br>
-b^{[l]} := b^{[l]} - \alpha \frac{v^{corrected}_{db^{[l]}}}{\sqrt{s^{corrected}_{db^{[l]}}} + \varepsilon}
+v_{db^{[l]}} := \beta_1 v_{db^{[l]}} + (1 - \beta_1) db^{[l]} \\
+v^{corrected}<em>{db^{[l]}} = \frac{v</em>{db^{[l]}}}{1 - (\beta_1)^t} \\
+s_{db^{[l]}} := \beta_2 s_{db^{[l]}} + (1 - \beta_2) (db^{[l]})^2 \\
+s^{corrected}<em>{db^{[l]}} = \frac{s</em>{db^{[l]}}}{1 - (\beta_2)^t} \\
+b^{[l]} := b^{[l]} - \alpha \frac{v^{corrected}<em>{db^{[l]}}}{\sqrt{s^{corrected}</em>{db^{[l]}}} + \varepsilon}
 \end{cases}$$</p>
 <p>The $t$ parameter in Adam included in the bias correction formula is the number of steps taken.</p>
 <p>Besides functions to update these parameters, we also need functions to initialize them (except for gradient descent)</p>
@@ -1647,7 +1647,7 @@ plt.show()
 
       <div class="media-body">
         <h5 class="card-title"><a href="https://Fquico1999.github.io/">Francisco Farinha</a></h5>
-        <h6 class="card-subtitle">Engineering Physics Student</h6>
+        <h6 class="card-subtitle">Data Scientist @ BlackBerry</h6>
         <p class="card-text">Interested in solving real-world problems using Machine Learning techniques.</p>
         <ul class="network-icon" aria-hidden="true">
   
@@ -1860,7 +1860,7 @@ plt.show()
     
     
     
-    <script src="/js/academic.min.37431be2d92d7fb0160054761ab79602.js"></script>
+    <script src="/js/academic.min.8e6bf9dce3dc44c1896a95d36724b780.js"></script>
 
     
 
@@ -1876,7 +1876,9 @@ plt.show()
   
 
   <p class="powered-by">
-    ©2021 Francisco Farinha | <a href="https://sourcethemes.com/academic/">Academic</a> | <a href="https://gohugo.io">Hugo</a>
+    ©2024 Francisco Farinha | 
+<a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic</a> | 
+<a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>
   </p>
 
   

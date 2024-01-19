@@ -5,9 +5,9 @@
     <link>https://Fquico1999.github.io/author/leon-a.-gatys/</link>
       <atom:link href="https://Fquico1999.github.io/author/leon-a.-gatys/index.xml" rel="self" type="application/rss+xml" />
     <description>Leon A. Gatys</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>©2021 Francisco Farinha | [Academic](https://sourcethemes.com/academic/) | [Hugo](https://gohugo.io)</copyright><lastBuildDate>Thu, 02 Jul 2020 22:51:27 -0700</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>©2024 Francisco Farinha | [Academic](https://sourcethemes.com/academic/) | [Hugo](https://gohugo.io)</copyright><lastBuildDate>Thu, 02 Jul 2020 22:51:27 -0700</lastBuildDate>
     <image>
-      <url>https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_512x512_fill_lanczos_center_2.png</url>
+      <url>https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_512x512_fill_lanczos_center_3.png</url>
       <title>Leon A. Gatys</title>
       <link>https://Fquico1999.github.io/author/leon-a.-gatys/</link>
     </image>
@@ -43,7 +43,7 @@
 &lt;p&gt;So, the derivative of the loss with respect to the activations is:&lt;/p&gt;
 &lt;p&gt;$$\frac{\partial \mathcal{L}_{content}}{\partial  F^{l}_{ij}} = \left\{
 \begin{array}{ll}
-(F^l-P^l)_{ij} &amp;amp; \text{if} F^{l}_{ij} &amp;gt; 0\\&lt;br&gt;
+(F^l-P^l)_{ij} &amp;amp; \text{if} F^{l}_{ij} &amp;gt; 0\\
 0 &amp;amp; \text{if} F^{l}_{ij} &amp;lt; 0
 \end{array}
 \right.$$&lt;/p&gt;
@@ -58,7 +58,7 @@
 &lt;p&gt;with $w_l$ weighting factors of the contribution of each layer. The derivatice of $E_l$ with respect to activations in layer $l$ becomes:&lt;/p&gt;
 &lt;p&gt;$$\frac{\partial E_l}{\partial  F^{l}_{ij}} = \left\{
 \begin{array}{ll}
-\frac{1}{N_l^2 M_l^2}((F^l)^T (G^l-A^l))_{ji} &amp;amp; \text{if} F^{l}_{ij} &amp;gt; 0\\&lt;br&gt;
+\frac{1}{N_l^2 M_l^2}((F^l)^T (G^l-A^l))_{ji} &amp;amp; \text{if} F^{l}_{ij} &amp;gt; 0\\
 0 &amp;amp; \text{if} F^{l}_{ij} &amp;lt; 0
 \end{array}
 \right.$$

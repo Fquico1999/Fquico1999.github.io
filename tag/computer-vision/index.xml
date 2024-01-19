@@ -5,9 +5,9 @@
     <link>https://Fquico1999.github.io/tag/computer-vision/</link>
       <atom:link href="https://Fquico1999.github.io/tag/computer-vision/index.xml" rel="self" type="application/rss+xml" />
     <description>Computer Vision</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>©2021 Francisco Farinha | [Academic](https://sourcethemes.com/academic/) | [Hugo](https://gohugo.io)</copyright><lastBuildDate>Fri, 05 Jun 2020 15:18:22 -0700</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><copyright>©2024 Francisco Farinha | [Academic](https://sourcethemes.com/academic/) | [Hugo](https://gohugo.io)</copyright><lastBuildDate>Fri, 05 Jun 2020 15:18:22 -0700</lastBuildDate>
     <image>
-      <url>https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_512x512_fill_lanczos_center_2.png</url>
+      <url>https://Fquico1999.github.io/images/icon_hu59cf491a3a20dd4a23becc20dcebe21e_42632_512x512_fill_lanczos_center_3.png</url>
       <title>Computer Vision</title>
       <link>https://Fquico1999.github.io/tag/computer-vision/</link>
     </image>
@@ -165,33 +165,33 @@ FULL SPEED /1e-20/
 &lt;thead&gt;
 &lt;tr&gt;
 &lt;th&gt;Rules&lt;/th&gt;
-&lt;th align=&#34;center&#34;&gt;Points&lt;/th&gt;
+&lt;th style=&#34;text-align:center&#34;&gt;Points&lt;/th&gt;
 &lt;/tr&gt;
 &lt;/thead&gt;
 &lt;tbody&gt;
 &lt;tr&gt;
 &lt;td&gt;Correctly record license plate and position for a car on outside track&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;+6&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;+6&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Correctly record license plate and position for a car on inside track&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;+8&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;+8&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;More than two wheels outside of the track&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;-2&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;-2&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Collide with white pick-up truck&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;-5&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;-5&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Hit pedestrian&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;-10&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;-10&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Drive one full loop around the outer track&lt;/td&gt;
-&lt;td align=&#34;center&#34;&gt;+5&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;+5&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
